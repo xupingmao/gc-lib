@@ -12,27 +12,31 @@ struct
         int obj_size;
         int ref_cap;
         int ref_size;
-        struct gc_obj* object_pool;
-        struct gc_ref* ref_pool;
+        struct gc_obj* obj_root;
+        struct gc_obj* obj_tail;
+        struct gc_ref* ref_root;
+        struct gc_ref* ref_tail;
     }gc_root;
     gc对象
     typedef struct gc_obj
     {
-      int type;
       int marked;
       void* value;
+      gc_obj* next;
     }gc_obj;
-    引用对象
+    引用关系
     typedef struct gc_ref
     {
-        struct gc_object* src;
-        struct gc_object* des;
+        struct gc_obj* src;
+        struct gc_obj* des;
+        struct gc_ref* next;
     }gc_ref;
 
 
 functions
 -------
-    void gc_init() :init gc_lib
+    void gc_init();
+    void gc_destroy();
     void* gc_malloc();
     void gc_free(void* ptr);
-    void gc_track(void*value) : track object
+    void gc_track(void*value);
