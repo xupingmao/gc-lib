@@ -2,6 +2,10 @@
 #ifndef gc_h
 #define gc_h
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 typedef struct gc_obj
 {
   int marked;
