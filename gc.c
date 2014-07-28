@@ -25,7 +25,13 @@ void gc_free( void* ptr)
 
 gc_root* gc_init()
 {
-  __gc_root = gc_obj_new("root");
+  __gc_root = gc_malloc( sizeof( gc_obj ));
+  char *description = "gc_lib_root"
+  char *value = gc_malloc( strlen(description) + 1);
+  strcpy(value, mem);
+  __gc_root->ref_head = NULL;
+  __gc_root->ref_tail = NULL;
+  __gc_root->value = value;
   return __gc_root;
 }
 
