@@ -11,15 +11,21 @@ typedef struct gc_obj
   int marked;
   void* value;
   struct gc_ref* ref_head;
+  /* ref_tail是为了加快添加引用的速度 */
   struct gc_ref* ref_tail;
 }gc_obj;
+
+/* 
+  多个对象可以引用同一个对象，将一个对象被引用的对象用链表连起来。
+*/
 
 typedef struct gc_ref
 {
   gc_obj* parent;
   gc_ref* next;
 }gc_ref;
-  
+
+
 /*
 typedef struct gc_root
 {
