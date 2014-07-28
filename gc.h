@@ -21,10 +21,19 @@ typedef struct gc_obj
 
 typedef struct gc_ref
 {
-  gc_obj* parent;
+  gc_obj* ref;
   gc_ref* next;
 }gc_ref;
 
+/*
+
+a = 10;
+b = "hello";
+c = "234324";
+lst = [a, b , c];
+定义为lst引用了 a, b, c
+
+*/
 
 /*
 typedef struct gc_root
