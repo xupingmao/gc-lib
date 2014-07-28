@@ -45,15 +45,20 @@ gc_obj* gc_obj_new(void* value)
   return gc_obj;
 }
 
-void gc_ref_new(gc_obj* father, gc_obj* son)
+void gc_ref_new(gc_obj* parent, gc_obj* child)
 {
-  gc_ref* tail = father->ref_tail;
+  gc_ref* tail = gc_malloc(sizeof(gc_ref));
+  
   if( tail == NULL ){
-    father->ref_tail = son;
-    father->ref_head = son;
+    tail->parent = parent;
+    tail->next = NULL;
+    father->ref_tail = tail;
+    father->ref_head = tail;
   }else{
-    tail->next = son;
-    father->ref_tail = son;
+    tail->parent = parent;
+    tail->next = NULL;
+    parent->ref_tail->next = tail;
+    parent->ref_tail = tail;
   }
 }
 
