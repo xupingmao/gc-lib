@@ -66,6 +66,7 @@ int main(int argc, char* argv[]) {
 
     // 完成功能
     
+    // 销毁所有对象
     gc_deinit(gc);
     return 0;
 }
