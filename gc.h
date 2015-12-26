@@ -1,3 +1,9 @@
+/*
+ * gc_lib for C language.
+ * @author: xupingmao
+ * @date: 2015-12-26
+ *
+ */
 
 #ifndef gc_h
 #define gc_h
@@ -6,59 +12,37 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef struct gc_obj
-{
-  int marked;
-  void* value;
-  struct gc_ref* ref_head;
-  /* ref_tail是为了加快添加引用的速度 */
-  struct gc_ref* ref_tail;
-}gc_obj;
+#define GC_LISTENERS_MAX 10
+#define GC_HEADER \
+    char marked;  \
+    char listener_idx;   \
+    void* _gc_next;
 
-/* 
-  多个对象可以引用同一个对象，将一个对象被引用的对象用链表连起来。
-*/
+typedef struct _GCObject {
+    GC_HEADER
+} GCObject;
 
-typedef struct gc_ref
-{
-  gc_obj* ref;
-  gc_ref* next;
-}gc_ref;
+typedef struct _GC {
+    int threshold;
+    int allocated;
+    int obj_cnt;
+    int listener_cnt;
+    void (*markers[GC_LISTENERS_MAX]) (struct _GC* gc, GCObject *obj); // ten listeners at most;
+    void (*destroyers[GC_LISTENERS_MAX])(struct _GC* gc, GCObject* obj); // mark functions.
+    GCObject _init_obj;
+    GCObject *root;
+    GCObject *first;
+    GCObject *last;
+}GC;
 
-/*
+GC* gc_init();
+void gc_deinit(GC* gc);
+int gc_add_listener(GC* gc, void (*marker)(GC* gc, GCObject* obj), void (*destroyer)(GC* gc, GCObject* obj));
 
-a = 10;
-b = "hello";
-c = "234324";
-lst = [a, b , c];
-定义为lst引用了 a, b, c
-
-*/
-
-/*
-typedef struct gc_root
-{
-  int obj_used; // 已使用的对象数量
-  int ref_used; // 已使用的引用数量
-  int obj_total; // 全部对象的数量
-  int ref_total; // 全部引用的数量
-  gc_obj* obj_pool; // 存放对象的内存池
-  gc_ref* ref_pool; // 存放引用的内存池
-}gc_root;
-*/
-
-gc_obj* __gc_root;
-
-gc_obj* gc_init();
-void gc_destroy();
-void gc_error(char*msg);
-void* gc_malloc(size_t size);
-void gc_free(void* ptr);
-gc_obj* gc_obj_new(void* value);
-gc_ref* gc_ref_new(gc_obj*parent, gc_obj*child);
-gc_obj* gc_global_obj_new(void* value);
-void gc_mark(gc_obj* obj);
-void gc_collect();
-void gc_sweep();
+void* gc_malloc(GC* gc, size_t size);
+GCObject* gc_new_obj(GC* gc, int size, int listener);
+void gc_free(GC* gc, void* ptr, size_t size);
+void gc_mark(GC* gc, GCObject* obj);
+void gc_sweep(GC* gc);
 
 #endif
