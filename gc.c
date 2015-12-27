@@ -38,6 +38,7 @@ GC* gc_init() {
 
 int gc_add_listener(GC *gc, void (*marker)(GC*, GCObject*), void (*destroyer)(GC *, GCObject*)) {
     assert(gc->listener_cnt < GC_LISTENERS_MAX);
+    assert(destroyer != NULL);
     gc->markers[gc->listener_cnt] = marker;
     gc->destroyers[gc->listener_cnt] = destroyer;
     gc->listener_cnt++;
@@ -69,6 +70,16 @@ void gc_deinit(GC* gc) {
     free(gc);
 }
 
+void gc_mark(GC *gc, GCObject *obj) {
+    if (obj->marked == 1) {
+        return;
+    }
+    obj->marked = 1;
+    if (gc->markers[obj->listener_idx] != NULL) {
+        gc->markers[obj->listener_idx] (gc, obj);
+    }
+}
+
 void gc_collect(GC* gc) {
     if (gc->root == NULL) return;
 
@@ -80,8 +91,7 @@ void gc_collect(GC* gc) {
 
     // first object will never be deleted.
     gc->first->marked = 1;
-    GCObject* root = gc->root;
-    gc->markers[root->listener_idx] (gc, root);
+    gc_mark(gc, gc->root);
 }
 
 void gc_sweep(GC* gc) {

@@ -24,9 +24,8 @@ typedef struct _List {
 void list_marker(GC* gc, GCObject* obj) {
     int i;
     List* list = (List*) obj;
-    list->marked = 1;
     for(i=0;i<list->size;i++) {
-        str_marker(gc, (GCObject*)(list->names[i]));
+        gc_mark(gc, (GCObject*)(list->names[i]));
     }
 }
 
