@@ -46,6 +46,8 @@ int gc_add_listener(GC *gc, void (*marker)(GC*, GCObject*), void (*destroyer)(GC
 }
 
 void gc_info(GC* gc) {
+    printf("sizeof(GC)=%d\n", sizeof(GC));
+    printf("sizeof(GCObject)=%d\n", sizeof(GCObject));
     printf("gc->allocated=%d\n", gc->allocated);
     printf("gc->threshold=%d\n", gc->threshold);
     printf("gc->obj_cnt=%d\n", gc->obj_cnt);
@@ -63,14 +65,20 @@ void gc_deinit(GC* gc) {
     GCObject* obj = gc->first->_gc_next;
     while (obj != NULL) {
         GCObject* next = obj->_gc_next;
-        gc->destroyers[obj->listener_idx](gc, obj);
+        gc_destroy(gc, obj);
         obj = next;
     }
     gc->obj_cnt = 0;
+
+    if (gc->allocated != 0) {
+        fprintf(stderr, "memeory leaks");
+    }
+
     free(gc);
 }
 
-void gc_mark(GC *gc, GCObject *obj) {
+void gc_mark(GC *gc, void *_obj) {
+    GCObject* obj = (GCObject*) _obj;
     if (obj->marked == 1) {
         return;
     }
@@ -78,6 +86,10 @@ void gc_mark(GC *gc, GCObject *obj) {
     if (gc->markers[obj->listener_idx] != NULL) {
         gc->markers[obj->listener_idx] (gc, obj);
     }
+}
+
+void gc_destroy(GC* gc, GCObject* obj) {
+    gc->destroyers[obj->listener_idx](gc, obj);
 }
 
 void gc_collect(GC* gc) {
@@ -105,9 +117,7 @@ void gc_sweep(GC* gc) {
         if (next->marked == 0) {
             gc->obj_cnt--;
             obj->_gc_next = next->_gc_next;
-
-            gc->destroyers[next->listener_idx](gc, next);
-
+            gc_destroy(gc, next);
             next = obj->_gc_next;
         } else {
             obj = next;

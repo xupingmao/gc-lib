@@ -25,7 +25,7 @@ void list_marker(GC* gc, GCObject* obj) {
     int i;
     List* list = (List*) obj;
     for(i=0;i<list->size;i++) {
-        gc_mark(gc, (GCObject*)(list->names[i]));
+        gc_mark(gc, list->names[i]);
     }
 }
 
@@ -65,6 +65,7 @@ int main(int argc, char* argv[]) {
         printf("list->names[%d]=%s\n", i, ((Str*) list->names[i])->name);
     }
 
+    gc_info(gc);
     gc_deinit(gc);
     return 0;
 }
